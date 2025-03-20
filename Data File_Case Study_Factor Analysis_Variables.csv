@@ -1,0 +1,75 @@
+name,Label
+ownership,Do you currently own a smartphone?
+usage_freq,"How frequently do you use a smartphone in your daily routine? (eg. calls, office work, social net..."
+usingSince,Since when do you own your current smartphone ?
+typicalUse,How long do you typically use a smartphone before purchasing a new one?
+brand,What is the brand of your current smartphone ? (In case if you own more than one smartphone kindl...
+cost,What was the price you paid for your current smartphone?
+starRating,Kindly rate your current smartphone by moving the slider to the right place
+intro_q,In this section we are interested in your perception of the product quality of your current smart...
+qd1,the overall attractiveness of my smartphone  is
+qd2,my smartphone  consistently performs
+qd3,my user experience with the various functions my smartphone  offers is/was
+qd4, My smartphone is really unique
+qd5,The performance of my smartphone  is excellent
+qd6,the innovativeness of the extra features offered by my smartphone  is
+qd7,the overall performance of my smartphone  is
+qd8,the extra features offered in my smartphone  usually function
+qd9,the competence of my smartphone's customer service staff is
+qd10,the appeal of my smartphone's design is
+qd11,my experience to learn  how to properly operate my smartphone  with all its functionalities is/was
+qd12,how well does your smartphone  performs its core functions
+qd13,my smartphone's ease of use is
+qd14,the promptness with which my smartphone's customer service reacts to my issues is
+qd15,the endurance of the materials used in my smartphone  is
+qd16,"the functioning speed of my smartphone (i.e. time taken to turn ON/OFF, open apps, multi-task etc) is"
+qd17,the robustness of the materials used in my smartphone  is
+qd18,the excitement I get from my smartphone's extra features is
+qd19,the level of professionalism shown by the service staff is
+qd20,the look- and feel of my smartphone  is
+qd21,the accessibility of my smartphone's customer service is
+qd22,the severity of defects/glitches of my smartphone  is
+qd23,My smartphone is a prestigious item for me
+qd24,the responsiveness of my smartphone's customer service staff is
+qd25,the number of additional features my smartphone  offers is
+qd26,the time span for which my smartphone  runs without any major defects is
+qd27,the overall fit and finish of my smartphone  is
+qd28,the amount of time for which my smartphone  works perfectly even under heavy usage (ex. everyday usage) is
+qd29,the frequency of defects/glitches of my smartphone  is
+qd30,the usability of my smartphone is
+qd31,the life span of my smartphone  is
+qd32,the standard of materials used in my smart phone is
+qd33,my smartphone's probability of failure or malfunctioning is
+intro_b,In the following section we want to better understand your overall evaluation of your current sma...
+wtp1,I am likely to pay a little bit more for using my current smartphone's brand
+wtp2,"If my current smartphone's brand were to raise the price by 10%, I would likely remain with it"
+wtp3,I am willing to pay more for my current smartphone's brand
+OQ1,my current smartphone  is the best in its product class
+OQ2,my current smartphone  consistently performs better than all other brands of smartphones
+bc1,I feel a strong emotional bond to my current smartphone  brand
+bc2,I feel a strong personal connection to my current smartphone  brand
+OQ3,I can always count on my current smartphone  for consistent high quality
+ri1,I intend to buy my current smartphone's brand in my next purchase
+ri2,"If I want to buy a smartphone  again, I will buy my current brand"
+bc3,"My thoughts and feelings towards my current smartphone's brand are often automatic, coming to mind seemingly on their own"
+bc4,My thoughts and feelings towards my current smartphone's brand come to my mind naturally and instantly
+sat3,As a whole I am satisfied with my current smartphone
+sat2,I am satisfied with my overall experience of my current smartphone
+OQ4,"Compared to others brands of smartphones, my current smartphone  is of very high quality"
+sat1,How satisfied are you with the overall experience of your current smartphone ?
+defect1,In this section we will like to know if you have faced any defects with your current smartphone a...
+defectsFaced,Have you faced any defects or glitches with your current smartphone until now?
+noOfDefects,In all how many defects have you experienced with your current smartphone ?
+defectsWarranty,How many of these defects were covered in the warranty service offered by your current smartphone...
+fRecall,Did you face any factory recalls with your current smartphone?
+def_sev1,Kindly answer the following question based on the worst defect you faced in your current smartphone-The severity of the worst defect I faced was
+def_sev2,the worst defect I faced caused me
+didComplain,What was your reaction to the worst defect that you have experienced?
+reactionComplain,What was the reaction towards your complaint?
+nextPurchase,"Now please think about the next purchase, when you will be replacing your current smartphone with..."
+intro_d,Now we are almost done with the survey.ÿ In this last section we would like to know some demograp...
+gender,Are you
+age,Select the age group you belong to:
+education,Which of the following options below best describes your education level?
+income,Which of the following options below best describes the annual household's income in your case ?
+brandrec,What is the brand of your current smartphone ? (In case if you own more than one smartphone kindl...
