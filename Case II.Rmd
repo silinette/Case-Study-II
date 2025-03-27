@@ -32,6 +32,7 @@ rm(list=ls())
 #install.packages('REdaS', repos = "https://cloud.r-project.org")
 #install.packages('psych', repos = "https://cloud.r-project.org")
 #install.packages('lm.beta', repos = "https://cloud.r-project.org")
+# PS The packages are installed
 
 # Load required libraries
 library(ggplot2)
