@@ -67,6 +67,7 @@ names(Data) # Show all variable names in the dataset
 list_na <- colnames(Data)[apply(Data, 2, anyNA)] # Identify columns with missing values
 list_na 
 sum(is.na(Data)) # Count total number of missing values
+sum(!is.na(Data))
 ```
 # Как убрать NA variables
 ```{r}
