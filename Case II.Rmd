@@ -188,3 +188,5 @@ Total_Variance_Explained
 print(PC1$loadings, cutoff=0.3, sort=TRUE)
 
 ```
+
+model <- lm(y ~ x, data = Data)
