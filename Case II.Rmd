@@ -117,52 +117,37 @@ dev.off()
 # Sorry, not enough space in R markdown :( 
 ```
 
+#Correlation Matrix
 ```{r, echo=FALSE, message = FALSE}
 
-raqMatrix <- cor(Data)
+raqMatrix <- cor(Data_clean[, paste0("qd", 1:33)])
 corrplot(as.matrix(raqMatrix))
 
 ```
+#Bartlett’s Test и KMO
 ```{r, echo=FALSE, message = FALSE}
 
-# Bartlett's Test, KMO, Anti-image Correlation 
-
-#Bartlett-Test
-#bart_spher(Data[2:31])
-
-```
-
-```{r, echo=FALSE, message = FALSE}
-
-kmo_test = KMOS(Data[2:31])
-kmo_test
-
+bart_spher(Data_clean[, paste0("qd", 1:33)])
 
 #KMO Criterion
-kmo_test$KMO
-
+kmo_test <- KMOS(Data_clean[, paste0("qd", 1:33)])
+kmo_test$KMO           # Общий показатель
 #Anti-Image Correlations
-kmo_test$MSA
-sort(kmo_test$MSA) #sorted
+sort(kmo_test$MSA)     # По переменным
 
 ```
 
 ```{r, echo=FALSE, message = FALSE}
 
-PC0 <- principal(Data[, 2:31], 
-                 rotate="varimax", 
-                 scores=TRUE)
-
+PC0 <- principal(Data_clean[, paste0("qd", 1:33)], 
+                 rotate = "none")
 PC0$values #eigenvalues
 
-plot(PC0$values, xlab="Factor Number", ylab="Eigenvalue",
-     main="Scree plot",
-     cex.lab=1.2, cex.axis=1.2, cex.main=1.8)+
-  abline(h=1)
+plot(PC0$values, type = "b", main = "Scree Plot", xlab = "Factor Number", ylab = "Eigenvalue")
+abline(h = 1)
 
 PC0_communalities <- data.frame(sort(PC0$communality))
 PC0_communalities
-
 
 ```
 
@@ -180,6 +165,8 @@ EigenValue_pc1
 
 PC1_communalities=data.frame(sort(PC1$communality))
 PC1_communalities
+
+
 
 ```
 
