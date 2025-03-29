@@ -1,9 +1,12 @@
 ---
-title: "Case II"
+title: "Case II — Smartphone Quality (Factor Analysis)"
 author: "Lina Simonian & Elena Pshenichnikova"
 output: html_document
 date: "2025-03-27"
 ---
+### Introduction
+
+The goal of this project is to explore how customers perceive smartphone quality and to identify the key dimensions (factors) that make up these perceptions. Traditional customer satisfaction surveys have failed to predict actual customer behavior, such as willingness to pay a price premium or repurchase intentions. Therefore, a factor analysis approach is used to uncover the latent dimensions of perceived product quality based on 33 survey items. These factors will then be used to explain and predict key behavioral outcomes, and to compare performance between major smartphone brands.
 
 ```{r, include=FALSE}
 
@@ -57,6 +60,7 @@ Data
 ```
 
 ```{r}
+#
 dim(Data) # Check the number of rows and columns in the dataset
 head(Data) # Display the first few rows of the dataset
 str(Data) # Display the structure of the dataset (types, sample values)
@@ -67,29 +71,49 @@ names(Data) # Show all variable names in the dataset
 list_na <- colnames(Data)[apply(Data, 2, anyNA)] # Identify columns with missing values
 list_na 
 sum(is.na(Data)) # Count total number of missing values
-sum(!is.na(Data))
+sum(!is.na(Data)) # Count total number of non-missing values
+#Column names that we do not touch:
+cols_keep_na <- c("noOfDefects", "defectsWarranty", "fRecall",
+                  "def_sev1", "def_sev2", "didComplain",
+                  "reactionComplain", "nextPurchase")
+# Create column vector to check for clearances:
+cols_check <- setdiff(names(Data), cols_keep_na)
+# Delete the rows where there is NA in these columns (the rest are not touched):
+Data_clean <- Data[complete.cases(Data[, cols_check]), ]
+Data_clean
+#write.csv(Data_clean, file = "~/Desktop/Data_clean.csv", row.names = FALSE)
+
 ```
-# Как убрать NA variables
+#Descriptive statistics 
 ```{r}
-round(stat.desc(Data), digits=3) # Compute descriptive statistics (without normality test)
-#Убрала NORM
+round(stat.desc(Data_clean[, paste0("qd", 1:33)]), digits = 2)
+# Descriptive statistics (mean, standard deviation, min, max, etc.) for the 33 quality-related survey items (qd1 to qd33) from the cleaned dataset. The results are rounded to 2 decimal places for readability. 
+# Normality test not included (norm = TRUE) because Likert-scale items are not truly continuous.
 ```
 ```{r}
 # Reshape the data into long format for visualization
-data_long <- Data %>%
-  pivot_longer(everything(), names_to = "Item", values_to = "Response")
+data_long <- Data_clean %>%
+  pivot_longer(everything(), names_to = "Item", values_to = "Response") # Convert the wide-format data frame into long format, where each row represents one response to one item.
+
 # Preview reshaped data
-head(data_long)
+head(data_long) # Show the first few rows of the long-format data to check the transformation
 
 # Convert responses to ordered factor
-data_long$Response <- factor(data_long$Response, levels = sort(unique(unlist(Data))))
+data_long$Response <- factor(data_long$Response, levels = sort(unique(unlist(Data_clean)))) # Convert all numeric responses into an ordered factor to preserve Likert scale order in plots
+
+# Save the plot to a PDF file
+pdf("~/Desktop/Distributions_by_Item.pdf", width = 30, height = 30)
+# Start writing to a PDF file on your Desktop
 
 # Plot response distributions for all items
-ggplot(data_long, aes(x = Response)) +
-  geom_bar(fill = "steelblue") +
-  facet_wrap(~ Item, scales = "free_y") +
-  labs(title = "Distributions", x = "Response", y = "Count") +
-  theme_minimal()
+ggplot(data_long, aes(x = Response)) + # Set x-axis to response values
+  geom_bar(fill = "steelblue") + # Create blue bar charts
+  facet_wrap(~ Item, scales = "free_y") + # Create separate plot for each item
+  labs(title = "Distributions", x = "Response", y = "Count") + # Add title and axis labels
+  theme_minimal()  # Use a clean and minimal theme for the plot
+
+dev.off()
+# Finish writing to the PDF file
 
 ```
 
