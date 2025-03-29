@@ -59,7 +59,7 @@ Data <- read.csv(url, header = TRUE)
 Data
 ```
 
-```{r}
+```{r, echo=FALSE, results="hide"}}
 #
 dim(Data) # Check the number of rows and columns in the dataset
 head(Data) # Display the first few rows of the dataset
