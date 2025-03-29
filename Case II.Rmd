@@ -136,7 +136,7 @@ kmo_test$KMO           # Общий показатель
 sort(kmo_test$MSA)     # По переменным
 
 ```
-
+### Scree Plot
 ```{r, echo=FALSE, message = FALSE}
 
 PC0 <- principal(Data_clean[, paste0("qd", 1:33)], 
@@ -150,45 +150,58 @@ PC0_communalities <- data.frame(sort(PC0$communality))
 PC0_communalities
 
 ```
-
+### PCA with Varimax Rotation
 ```{r, echo=FALSE, message = FALSE}
 
-# Principal components analysis with varimax rotation
+# Principal Components Analysis (PCA) with Varimax Rotation
+PC1 <- principal(
+  Data_clean[, paste0("qd", 1:33)],  # use cleaned data and qd1..qd33 columns
+  rotate = "varimax",
+  nfactors = 9,
+  scores = TRUE
+)
 
-PC1 <- principal(Data[, 2:31], 
-                        rotate="varimax",
-                        nfactors=9, 
-                        scores=TRUE)
-
+# Extract eigenvalues
 EigenValue_pc1 <- PC1$values
-EigenValue_pc1 
+EigenValue_pc1
 
-PC1_communalities=data.frame(sort(PC1$communality))
+# Sort and save communalities
+PC1_communalities <- data.frame(sort(PC1$communality))
 PC1_communalities
-
-
 
 ```
 
 ```{r, echo=FALSE, message = FALSE}
 
+# Extract eigenvalues from the PCA object
 EigenValue <- PC1$values
 
-Variance <- EigenValue/ncol(subset(Data, select = c(x1:x30)))*100
+# Number of items (qd1..qd33) used in factor analysis
+n_items <- 33
 
-SumVariance <- cumsum(EigenValue/ncol(subset(Data, select = c(x1:x30))))
+# Calculate percentage of variance explained by each factor
+Variance <- EigenValue / n_items * 100
 
+# Cumulative variance explained
+SumVariance <- cumsum(Variance)
 
-Total_Variance_Explained <- cbind(EigenValue=EigenValue[EigenValue>0],
-                                  Variance=Variance[Variance>0],
-                                  Total_Variance=SumVariance[Variance>0])
+# Build a summary table of eigenvalues and variance explained
+Total_Variance_Explained <- cbind(
+  EigenValue = EigenValue[EigenValue > 0],
+  Variance = Variance[Variance > 0],
+  Total_Variance = SumVariance[Variance > 0]
+)
+
+# View the table
 Total_Variance_Explained
 
 ```
 
 ```{r, echo=FALSE, message = FALSE}
 
-print(PC1$loadings, cutoff=0.3, sort=TRUE)
+# Display the factor loadings above 0.3, sorted by factor
+print(PC1$loadings, cutoff = 0.3, sort = TRUE)
+
 
 ```
 
