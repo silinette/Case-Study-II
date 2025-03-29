@@ -114,15 +114,7 @@ ggplot(data_long, aes(x = Response)) + # Set x-axis to response values
 
 dev.off()
 # Finish writing to the PDF file
-
-```
-
-
-```{r, echo=FALSE, message = FALSE}
-#Residuals
-par(mfrow = c(2, 2))
-plot(Data)
-#should be removed
+# Sorry, not enough space in R markdown :( 
 ```
 
 ```{r, echo=FALSE, message = FALSE}
