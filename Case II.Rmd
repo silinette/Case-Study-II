@@ -265,3 +265,58 @@ factor_table <- data.frame(
 kable(factor_table, caption = "Table: Factors and Their Interpretations Based on Survey Items", align = "l")
 
 ```
+
+```{r, echo=FALSE, message = FALSE}
+# Добавим факторные оценки к исходным данным
+Data_with_scores <- cbind(Data_clean, PC1$scores)
+
+# Посмотрим названия брендов (предположим, переменная называется brand)
+unique(Data_with_scores$brand)  # Проверка
+
+# Сравним средние значения факторов по брендам
+library(dplyr)
+
+factor_by_brand <- Data_with_scores %>%
+  group_by(brand) %>%
+  summarise(across(RC1:RC9, mean, na.rm = TRUE))
+
+print(factor_by_brand)
+```
+```{r, echo=FALSE, message = FALSE}
+
+# Объединяем факторы и бренды в один датафрейм
+Data_scores <- cbind(Data_clean["brand"], PC1$scores)
+
+# Группируем по бренду и считаем среднее значение по каждому фактору
+Factor_means <- Data_scores %>%
+  group_by(brand) %>%
+  summarise(across(starts_with("RC"), mean))
+
+Factor_means
+
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+
+# Преобразуем таблицу в длинный формат для ggplot
+Factor_means_long <- Factor_means %>%
+  pivot_longer(cols = starts_with("RC"), names_to = "Factor", values_to = "Mean")
+
+# Строим график
+ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = factor(brand))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Comparison of Brands by Factor Scores",
+       x = "Factor",
+       y = "Mean Score",
+       fill = "Brand") +
+  theme_minimal(base_size = 14)
+
+```
+
+
+unique(Data$brand)
+table(Data$brand)
+
+unique(Data_clean$brand)
+table(Data_clean$brand)
