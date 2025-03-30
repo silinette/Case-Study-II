@@ -10,7 +10,7 @@ The goal of this project is to explore how customers perceive smartphone quality
 
 ```{r, include=FALSE}
 
-# clear the database
+# Сlear the database
 rm(list=ls()) 
 graphics.off()
 
@@ -52,7 +52,7 @@ library(psych)        # For PCA and KMO
 
 ```
 
-```{r, include=FALSE, results = "hide"}
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 
 # Read the dataset directly from the provided URL
 url <- "https://raw.githubusercontent.com/silinette/Case-Study-II/refs/heads/main/Data%20File_Case_Study_Factor%20Analysis_MD.csv"
@@ -61,7 +61,7 @@ Data <- read.csv(url, header = TRUE)
 Data
 ```
 
-```{r}
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 # Explore the structure of the dataset
 dim(Data) # Check the number of rows and columns in the dataset
 head(Data) # Display the first few rows of the dataset
@@ -69,7 +69,7 @@ str(Data) # Display the structure of the dataset (types, sample values)
 names(Data) # Show all variable names in the dataset
 ```
 
-```{r}
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 # Check for missing values
 list_na <- colnames(Data)[apply(Data, 2, anyNA)] # Identify columns with missing values
 list_na 
@@ -172,7 +172,7 @@ PC0_communalities
 PC1 <- principal(
   Data_clean[, paste0("qd", 1:33)],  # use cleaned data and qd1..qd33 columns
   rotate = "varimax",
-  nfactors = 9,
+  nfactors = 8,
   scores = TRUE
 )
 
