@@ -172,7 +172,7 @@ PC0_communalities
 PC1 <- principal(
   Data_clean[, paste0("qd", 1:33)],  # use cleaned data and qd1..qd33 columns
   rotate = "varimax",
-  nfactors = 8,
+  nfactors = 9,
   scores = TRUE
 )
 
@@ -221,3 +221,47 @@ print(PC1$loadings, cutoff = 0.3, sort = TRUE)
 ```
 
 model <- lm(y ~ x, data = Data)
+
+```{r, echo=FALSE, message = FALSE}
+library(knitr)
+
+factor_table <- data.frame(
+  Factor = c("RC1", "RC2", "RC3", "RC4", "RC5", "RC6", "RC7", "RC8", "RC9"),
+  Quality_Dimension = c(
+    "Performance",
+    "Features/Versatility",
+    "Reliability/Flawlessness",
+    "Durability",
+    "Ease of Use",
+    "Serviceability",
+    "Aesthetics/Appearance",
+    "Distinctiveness/Prestige",
+    "Conformance (Build Quality)"
+  ),
+  Survey_Items = c(
+    "qd2, qd5, qd7, qd12, qd16",
+    "qd6, qd8, qd18, qd25",
+    "qd22, qd26, qd29, qd33",
+    "qd15, qd17, qd28, qd31",
+    "qd3, qd11, qd13, qd30",
+    "qd9, qd14, qd19, qd21, qd24",
+    "qd1, qd10, qd20",
+    "qd4, qd23",
+    "qd27, qd32"
+  ),
+  Interpretation = c(
+    "Core performance and operational consistency.",
+    "Innovative and exciting features beyond core functionality.",
+    "Freedom from defects and malfunctions.",
+    "Longevity and resistance to wear and heavy usage.",
+    "User-friendliness and ease of operation.",
+    "Quality and responsiveness of customer service.",
+    "Visual appeal and design of the product.",
+    "Uniqueness and symbolic value of the smartphone.",
+    "Fit, finish, and use of quality materials."
+  )
+)
+
+kable(factor_table, caption = "Table: Factors and Their Interpretations Based on Survey Items", align = "l")
+
+```
