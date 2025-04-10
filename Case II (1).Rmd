@@ -430,42 +430,71 @@ PAF1_communalities
 print(PAF1$loadings, cutoff = 0.3, sort = TRUE)
 
 ```
+### Comparison
+```{r, echo=FALSE, message = FALSE}
+#PCA
+Eigen_PCA <- PCA1$values
+Variance_PCA <- Eigen_PCA / 31 * 100
+CumVar_PCA <- cumsum(Variance_PCA)
+
+#PAF
+Eigen_PAF <- PAF1$e.values
+Variance_PAF <- Eigen_PAF / 31 * 100
+CumVar_PAF <- cumsum(Variance_PAF)
+
+# Объединяем пары рядом
+Comparison_Table <- data.frame(
+  Factor = 1:length(Eigen_PCA),
+  Eigen_PCA = round(Eigen_PCA, 3),
+  Eigen_PAF = round(Eigen_PAF, 3),
+  Variance_PCA = round(Variance_PCA, 2),
+  Variance_PAF = round(Variance_PAF, 2),
+  Cumulative_PCA = round(CumVar_PCA, 2),
+  Cumulative_PAF = round(CumVar_PAF, 2)
+)
+
+# Красиво выводим
+kable(Comparison_Table, caption = "Side-by-Side Comparison of PCA and PAF (Varimax)")
+
+```
 
 ```{r, echo=FALSE, message = FALSE}
-# Получаем таблицы с нагрузками
-PCA_loadings <- as.data.frame(unclass(PCA1$loadings))
-PAF_loadings <- as.data.frame(unclass(PAF1$loadings))
+# Эстетичная таблица сравнения PCA и PAF факторов
 
-# Округляем значения
-PCA_loadings <- round(PCA_loadings, 2)
-PAF_loadings <- round(PAF_loadings, 2)
+comparison_df <- data.frame(
+  Metric = c("SS Loadings", "Proportion of Variance", "Cumulative Variance"),
+  
+  `RC2 (PCA)` = c(4.673, 0.151, 0.151),
+  `PA2 (PAF)` = c(4.569, 0.147, 0.147),
+  
+  `RC1 (PCA)` = c(3.908, 0.126, 0.277),
+  `PA1 (PAF)` = c(3.577, 0.115, 0.263),
+  
+  `RC5 (PCA)` = c(3.492, 0.113, 0.389),
+  `PA5 (PAF)` = c(3.404, 0.110, 0.373),
+  
+  `RC4 (PCA)` = c(3.297, 0.106, 0.496),
+  `PA4 (PAF)` = c(3.121, 0.101, 0.473),
+  
+  `RC7 (PCA)` = c(3.020, 0.097, 0.593),
+  `PA3 (PAF)` = c(2.781, 0.090, 0.563),
+  
+  `RC6 (PCA)` = c(2.856, 0.092, 0.685),
+  `PA7 (PAF)` = c(2.675, 0.086, 0.649),
+  
+  `RC3 (PCA)` = c(2.492, 0.080, 0.766),
+  `PA6 (PAF)` = c(2.324, 0.075, 0.724),
+  
+  `RC8 (PCA)` = c(2.337, 0.075, 0.841),
+  `PA8 (PAF)` = c(1.935, 0.062, 0.787)
+)
 
-# Добавляем суффиксы
-colnames(PCA_loadings) <- paste0(colnames(PCA_loadings), "_PCA")
-colnames(PAF_loadings) <- paste0(colnames(PAF_loadings), "_PAF")
-
-# Упорядочим столбцы попарно: RC1_PCA, RC1_PAF, RC2_PCA, RC2_PAF и т.д.
-combined_list <- list()
-for (i in 1:ncol(PCA_loadings)) {
-  fac_name <- gsub("_PCA", "", colnames(PCA_loadings)[i])
-  combined_list[[paste0(fac_name, "_PCA")]] <- PCA_loadings[[i]]
-  combined_list[[paste0(fac_name, "_PAF")]] <- PAF_loadings[[i]]
-}
-
-# Собираем в датафрейм
-Combined_Loadings <- as.data.frame(combined_list)
-rownames(Combined_Loadings) <- rownames(PCA_loadings)
-
-# Печатаем
-print(Combined_Loadings)
-
-# Для красивого отображения:
-# DT::datatable(Combined_Loadings)
-# или
-# knitr::kable(Combined_Loadings, caption = "Side-by-Side Factor Loadings: PCA vs PAF")
-
-# knitr::kable(Combined_Loadings, caption = "Comparison of PCA and PAF Loadings")
-
+# Вывод в HTML-стиле (в отчёте будет аккуратно)
+knitr::kable(
+  comparison_df,
+  caption = "Side-by-Side Comparison of Factor Metrics from PCA and PAF (Varimax)",
+  align = c("l", rep("c", ncol(comparison_df) - 1))
+)
 ```
 
 
@@ -475,8 +504,7 @@ print(Combined_Loadings)
 
 
 
-
-
+# **Question 1: Orthogonal Factor Analysis**
 
 
 
