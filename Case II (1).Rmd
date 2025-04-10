@@ -4,15 +4,18 @@ author: "Lina Simonian & Elena Pshenichnikova"
 date: "2025-03-25"
 output:
   html_document:
-    theme: flatly          
-    highlight: breezedark 
+    theme: flatly
+    highlight: breezedark
     toc: true
     toc_float: true
     number_sections: true
     code_folding: show
     df_print: paged
+  pdf_document:
+    toc: true
 ---
 
+```{=html}
 <style>
 /* Floating TOC container */
 .tocify {
@@ -54,7 +57,7 @@ output:
   border-left: 4px solid #3498db;
 }
 </style>
-
+```
 # **Introduction**
 
 This project investigates how customers perceive the quality of smartphones across multiple brands, with the goal of identifying the key dimensions of perceived quality that influence consumer behavior—such as **willingness to pay a premium** or **repurchase intentions**.
@@ -62,7 +65,6 @@ This project investigates how customers perceive the quality of smartphones acro
 Although product quality is widely accepted as a *multidimensional concept*, few studies have successfully captured this complexity from the customer’s point of view using consistent measurement tools. To address this gap, we analyze survey data from over **1,000 smartphone users** in the United States, focusing on **33 product quality items** developed through expert interviews and validation.
 
 Using **factor analysis**, we aim to uncover the underlying structure of how users assess smartphone quality. These latent dimensions are then evaluated across brands to compare perceived strengths and weaknesses. The findings offer valuable insights for **product managers**, **marketers**, and **brand strategists** looking to better understand what drives **customer satisfaction and loyalty** in a competitive market.
-
 
 ------------------------------------------------------------------------
 
@@ -194,21 +196,24 @@ sum(is.na(Data_clean))
 #write.csv(Data_clean, file = "~/Desktop/Data_clean.csv", row.names = FALSE) 
 ```
 
-## **Descriptive statistics**                                                                                      
+## **Descriptive statistics**
+
 To gain an initial understanding of the dataset, we conducted a descriptive statistical analysis for all 33 quality-related survey items (qd1–qd33). These items reflect various dimensions of perceived smartphone quality, such as durability, reliability, aesthetics, ease of use, and performance.
 
 The analysis included measures such as:
 
-- Mean — showing the average perception for each item
-- Standard deviation — indicating how much responses varied across users
-- Minimum and maximum values — to capture the range of responses
-- Skewness patterns — to identify whether responses were clustered toward low or high values
+-   Mean — showing the average perception for each item
+-   Standard deviation — indicating how much responses varied across users
+-   Minimum and maximum values — to capture the range of responses
+-   Skewness patterns — to identify whether responses were clustered toward low or high values
+
 ```{r}
 # Descriptive statistics for 33 quality-related variables
 # Descriptive statistics (mean, standard deviation, min, max, etc.) for the 33 quality-related survey items (qd1 to qd33) from the cleaned dataset. The results are rounded to 2 decimal places for readability. 
 # Normality test not included (norm = TRUE) because Likert-scale items are not truly continuous.
 round(stat.desc(Data_clean[, paste0("qd", 1:33)]), digits = 3)
 ```
+
 ## **Visual Inspection of Response Distributions**
 
 The chart above presents **individual bar plots** for all 33 survey items related to perceived product quality (qd1–qd33). Each plot displays the **frequency distribution** of participant responses on a **Likert scale** ranging from 1 to 7.
@@ -216,6 +221,7 @@ The chart above presents **individual bar plots** for all 33 survey items relate
 These visualizations allow us to identify general trends, skewness, and patterns across items. For instance, the majority of responses for most items cluster around values 3 to 5, indicating moderate to high perceptions of quality. Items such as `qd4`, `qd23`, and `qd28` exhibit greater variability or skew, suggesting diverse customer opinions in those areas.
 
 By inspecting these distributions, we can preliminarily assess **data suitability** for factor analysis and detect any **floor or ceiling effects** that could impact the results.
+
 ```{r}
 # Reshape only qd1 to qd33 into long format for visualization
 data_long <- Data_clean %>%
@@ -241,7 +247,9 @@ ggplot(data_long, aes(x = Response)) + # Set x-axis to response values
 ```
 
 ## **Correlation Matrix**
+
 **Correlation Matrix** The correlation matrix shows how strongly each of the 33 quality-related survey items is **linearly** related to the others. It helps identify clusters of items that may measure the same underlying dimension of perceived quality, serving as a foundation for factor analysis
+
 ```{r, echo=FALSE, message = FALSE}
 
 # Calculate and visualize correlation matrix
@@ -261,6 +269,7 @@ corrplot(raqMatrix,
 During the inspection of the correlation matrix, we observed an extremely week correlation between **Item 23 (qd23)** and **Item 4 (qd4)**. Such week multicollinearity indicates that these items are not likely measuring the same underlying concept, potentially distorting the factor structure.\
 
 ## **Bartlett’s Test и KMO**
+
 ```{r, echo=FALSE, message = FALSE}
 # Run Bartlett's test of sphericity
 bart_spher(Data_clean[, paste0("qd", 1:33)])
@@ -280,7 +289,28 @@ sort(kmo_test$MSA)     # Measure of sampling adequacy for each item
 
 **Anti-Image Correlations.** Although qd4 still meet the minimum threshold (above 0.50), its anti-image correlation values are relatively lower compared to the rest. However, qd23 despite a weak visual correlation pattern, shows **good MSA** (0.90).
 
+Since we observed controversial results for qd4 and especially for qd23—with a strong MSA but weak visual correlationit is important to assess its communality to determine how well it is represented by the factor solution.
+
+```{r, echo=FALSE, message=FALSE}
+
+# Running PCA without rotation for scree plot analysis
+PC <- principal(
+  Data_clean[, paste0("qd", 1:33)],
+  rotate = "none"
+)
+# Extraction and displaying communalities
+PC_communalities <- data.frame(sort(PC$communality))
+PC_communalities
+```
+
+**Communality** measures how much of a variable’s variance is explained by the extracted factors. Values closer to 1 indicate a good fit, while low values suggest the item is not well captured by the model.
+
+In this case, qd23 has a communality of only 0.046, indicating that less than 5% of its variance is accounted for by the factors. qd4 performs even worse, with a communality of just 0.004.
+
+**Conclusion:** qd4 qd23 have low communality, confirming that it does not contribute meaningfully to the factor structure. Therefore, both qd4 and qd23 should be excluded from the final analysis to improve the overall model quality.
+
 ## **Scree Plot**
+
 ```{r, echo=FALSE, message=FALSE}
 
 # Running PCA without rotation for scree plot analysis
@@ -300,10 +330,10 @@ PC0_communalities <- data.frame(sort(PC0$communality))
 PC0_communalities
 
 ```
+
 The **scree plot** displays the eigenvalues of all extracted factors. The first factor explains a substantial amount of variance, while the next four also have eigenvalues above 1. From the sixth factor onward, the curve levels off and eigenvalues drop below the threshold.
 
-Based on the **Kaiser criterion** (eigenvalues > 1) and the **elbow rule**, it is decided to retain **eight factors**, as they represent the most meaningful structure in the data.
-
+Based on the **Kaiser criterion** (eigenvalues \> 1) and the **elbow rule**, it is decided to retain **eight factors**, as they represent the most meaningful structure in the data.
 
 ## **Principal Component Analysis with Varimax Rotation**
 
@@ -319,18 +349,19 @@ PCA1 <- principal(
   scores = TRUE
 )
 
-# Extract eigenvalues
-EigenValue_PCA1 <- PCA1$values
-EigenValue_PCA1
 
 # Sort and save communalities
 PCA1_communalities <- data.frame(sort(PCA1$communality))
 PCA1_communalities
 
 ```
+Communalities from the PCA with Varimax rotation showed that items were well explained by the retained 8-factor solution. Variables had high communalities ( > 0.70), indicating strong representation in the factor structure. 
 
-```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+```{r, echo=FALSE,  message=FALSE, warning=FALSE}
 ### **Variance Explained Table for PCA Components**
+# Extract eigenvalues
+EigenValue_PCA1 <- PCA1$values
+
 # Extraction eigenvalues from the PCA object
 EigenValue <- PCA1$values
 
@@ -354,7 +385,7 @@ Total_Variance_Explained <- cbind(
 Total_Variance_Explained
 
 ```
-
+A Principal Component Analysis (PCA) was conducted on 31 survey items. The first component explained 51.16% of the total variance, indicating a dominant underlying dimension. The first eight components together accounted for 84.11% of the total variance, supporting the adequacy of an 8-factor solution. The remaining components contributed minimally and were not retained for further interpretation. This level of explained variance suggests that the factor model provides a robust and meaningful reduction of the original variable set.
 ```{r, echo=FALSE, message = FALSE}
 
 # Print factor loadings above 0.3, sorted by factor
@@ -362,8 +393,7 @@ Total_Variance_Explained
 print(PCA1$loadings, cutoff = 0.3, sort = TRUE)
 
 ```
-
-
+Each factor groups together items with high loadings, reflecting distinct psychological or product-related dimensions. Factor names were assigned based on the thematic content of the items with the strongest loadings.
 ```{r, echo=FALSE, message = FALSE}
 library(knitr)
 
@@ -397,6 +427,7 @@ kable(factor_table, caption = "Table: Factors and Their Interpretations Based on
 ```
 
 ## **Principal Axis Factoring (PAF) with Varimax rotation**
+
 ```{r, echo=FALSE, message = FALSE}
 # Run Principal Axis Factoring (PAF) with Varimax rotation
 PAF1 <- fa(
@@ -407,14 +438,37 @@ PAF1 <- fa(
   scores = TRUE
 )
 
-# Extract eigenvalues
-EigenValue_PAF1 <- PAF1$e.values
-EigenValue_PAF1
 
 # Sort and save communalities
 PAF1_communalities <- data.frame(sort(PAF1$communality))
 PAF1_communalities
 ```
+The communalities obtained from the Principal Axis Factoring (PAF) model indicate how well each survey item is explained by the extracted factors. In this analysis, the majority of items showed moderate to high communalities, with values starting from 0.63. These values suggest that these items share substantial common variance with other items and are well represented within the factor structure.
+
+```{r, echo=FALSE,  message=FALSE, warning=FALSE}
+### **Variance Explained Table for PCA Components**
+# Extract eigenvalues
+EigenValue_PAF1 <- PAF1$e.values
+
+# Calculating percentage of variance explained by each factor
+Variance_PAF1 <- EigenValue_PAF1 / n_items * 100
+
+# Cumulative variance explained
+SumVariance_PAF1 <- cumsum(Variance)
+
+# Building a summary table of eigenvalues and variance explained
+Total_Variance_Explained_PAF1 <- cbind(
+  EigenValue_PAF1 = EigenValue_PAF1[EigenValue > 0],
+  Variance_PAF1 = Variance_PAF1[Variance > 0],
+  Total_Variance_PAF1 = SumVariance_PAF1[Variance > 0]
+)
+
+# Viewing the table
+Total_Variance_Explained_PAF1
+
+```
+The Principal Axis Factoring (PAF) model produced an eigenvalue and variance structure closely aligned with that of the Principal Component Analysis (PCA). The first factor in both models explained 51.16% of the total variance, confirming the presence of a dominant underlying dimension in the data. Across the first eight components, PAF explained a cumulative 84.1% of the total variance, identical to the PCA solution, indicating strong agreement in the overall factor structure.
+
 
 ```{r, echo=FALSE, message = FALSE}
 
@@ -423,6 +477,7 @@ PAF1_communalities
 print(PAF1$loadings, cutoff = 0.3, sort = TRUE)
 
 ```
+Each factor was defined by items with strong loadings (≥ 0.30), with minimal cross-loading. Key groupings—such as qd9, qd14, qd19, and qd24 on PA2, and qd2, qd5, qd7, and qd12 on PA1—reflected consistent themes like serviceability and style consciousness.
 ```{r,echo=FALSE, message = FALSE}
 factor_table <- data.frame(
   Factor = c("PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PA8"),
@@ -449,9 +504,10 @@ factor_table <- data.frame(
 )
 kable(factor_table, caption = "Table: Factors and Their Interpretations Based on PAF (Varimax) Loadings", align = "l")
 ```
+The PCA and PAF models yielded highly consistent 8-factor solutions, with most items loading on the same factors across both methods. Key dimensions like Distinctiveness/Prestige, Ease of Use, Aesthetics, and Reliability were stable. Minor differences appeared in factor ordering (e.g., Performance and Serviceability switched positions), but item groupings remained unchanged. 
 
+## **PCA and PAF comparison**
 
-## Comparison
 ```{r, echo=FALSE, message = FALSE}
 #PCA
 Eigen_PCA <- PCA1$values
@@ -478,7 +534,7 @@ Comparison_Table <- data.frame(
 kable(Comparison_Table, caption = "Side-by-Side Comparison of PCA and PAF (Varimax)")
 
 ```
-
+The table shows a nearly identical pattern of eigenvalues and explained variance between PCA and PAF for the first 20 factors. Both methods yield the same eigenvalues and cumulative variance up to Factor 8, reaching 84.11% of total variance explained. 
 ```{r, echo=FALSE, message = FALSE}
 # Эстетичная таблица сравнения PCA и PAF факторов
 
@@ -517,9 +573,12 @@ knitr::kable(
   align = c("l", rep("c", ncol(comparison_df) - 1))
 )
 ```
+The comparison shows very similar SS loadings, proportion of variance, and cumulative variance for each factor across PCA and PAF. While PCA slightly overestimates the variance explained (as it includes unique variance), PAF presents a more conservative estimate by focusing on shared variance only. Despite this, the difference is minimal. This further supports the robustness of the 8-factor structure.
 
 # **Question 2: Oblique Factor Analysis**
+
 ## **Principal Axis Factoring (PAF) with Promax rotation**
+
 ```{r}
 # Run Principal Axis Factoring with oblique (Promax) rotation
 PAF_promax <- fa(
@@ -543,6 +602,7 @@ PAF_promax_communalities
 ```{r, echo=FALSE, message = FALSE}
 print(PAF_promax$loadings, cutoff = 0.3, sort = TRUE)
 ```
+
 ```{r}
 library(knitr)
 
@@ -587,7 +647,6 @@ kable(factor_table, caption = "Table: Factors and Their Interpretations Based on
 
 ```
 
-
 ```{r, echo=FALSE, message = FALSE}
 # Add factor ratings to the raw data
 Data_with_scores <- cbind(Data_clean, PCA1$scores)
@@ -600,7 +659,7 @@ library(dplyr)
 
 factor_by_brandrec <- Data_with_scores %>%
  group_by(brandrec) %>%
-  summarise(across(RC1:RC9, mean, na.rm = TRUE))
+  summarise(across(RC1:RC8, mean, na.rm = TRUE))
 
 #print(factor_by_brandrec)
 ```
@@ -618,9 +677,6 @@ Factor_means <- Data_scores %>%
 Factor_means
 
 ```
-
-
-
 
 ```{r, echo=FALSE, message = FALSE}
 library(ggplot2)
@@ -668,5 +724,3 @@ ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = brandrec)) +
 
 
 ```
-
-
