@@ -1,0 +1,100 @@
+---
+title: "Case II only Samsung"
+output: html_document
+date: "2025-04-08"
+---
+
+```{r, include=FALSE}
+
+# Сlear the database
+rm(list=ls()) 
+graphics.off()
+
+```
+
+```{r setup, include=FALSE, results = "hide"}
+
+#Readability in HTML report
+#install.packages("DT")
+library(DT)
+
+# Clear the database
+rm(list=ls()) 
+
+#Install necessary packages. Delete # sign in order to download all of them. 
+#install.packages('rcompanion', repos = "https://cloud.r-project.org")
+#install.packages('nortest', repos = "https://cloud.r-project.org")
+#install.packages('corrplot', repos = "https://cloud.r-project.org")
+#install.packages('olsrr', repos = "https://cloud.r-project.org")
+#install.packages('dplyr', repos = "https://cloud.r-project.org")
+#install.packages('pastecs', repos = "https://cloud.r-project.org")
+#install.packages('REdaS', repos = "https://cloud.r-project.org")
+#install.packages('psych', repos = "https://cloud.r-project.org")
+#install.packages('lm.beta', repos = "https://cloud.r-project.org")
+
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(broom)
+library(lm.beta)
+library(pastecs)
+library(tidyr)
+library(corrplot)     # For correlation matrix visualization
+library(olsrr)        # For VIF and tolerance values
+library(REdaS)        # For Bartlett's test
+library(psych)        # For PCA and KMO
+
+```
+
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+
+# Read the dataset directly from the provided URL
+url <- "https://raw.githubusercontent.com/silinette/Case-Study-II/refs/heads/main/Data%20File_Case_Study_Factor%20Analysis_MD.csv"
+
+Data <- read.csv(url, header = TRUE)
+Data
+```
+
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+# Explore the structure of the dataset
+dim(Data) # Check the number of rows and columns in the dataset
+head(Data) # Display the first few rows of the dataset
+str(Data) # Display the structure of the dataset (types, sample values)
+names(Data) # Show all variable names in the dataset
+```
+
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+# Check for missing values
+list_na <- colnames(Data)[apply(Data, 2, anyNA)] # Identify columns with missing values
+list_na 
+sum(is.na(Data)) # Count total number of missing values
+sum(!is.na(Data)) # Count total number of non-missing values
+
+#Column names that we do not touch/Define variables we will keep even with NAs:
+cols_keep_na <- c("noOfDefects", "defectsWarranty", "fRecall",
+                  "def_sev1", "def_sev2", "didComplain",
+                  "reactionComplain", "nextPurchase")
+
+# Create column vector to check for clearances/Define variables to check for complete cases:
+cols_check <- setdiff(names(Data), cols_keep_na)
+
+# Filter for Samsung only (brandrec == 2) and apply listwise deletion
+Data_clean <- Data %>%
+  filter(brandrec == 2) %>%                # keep only Samsung
+  filter(complete.cases(across(all_of(cols_check))))  # listwise deletion
+
+
+#write.csv(Data_clean, file = "~/Desktop/Data_clean.csv", row.names = FALSE)
+
+```
+### Conclusion 
+
+The results of the factor analysis revealed nine distinct dimensions of smartphone quality as perceived by consumers: Performance, Features, Reliability, Durability, Ease of Use, Service, Aesthetics, Distinctiveness, and Conformance. Each factor grouped conceptually similar survey items and aligned well with the existing literature.
+
+The scree plot and eigenvalues supported the retention of 9 factors, cumulatively explaining over 82% of the total variance. Varimax rotation helped in achieving clearer interpretation by minimizing cross-loadings.
+
+Using factor scores, we compared average brand perceptions across these dimensions. The differences observed can be used to guide strategic decisions regarding product improvement and marketing communication.
+
+This analysis demonstrates how factor analysis can uncover meaningful insights about consumer perceptions that go beyond simple satisfaction metrics. It provides a powerful tool for product benchmarking and positioning in a competitive market.
