@@ -11,7 +11,50 @@ output:
     code_folding: show
     df_print: paged
 ---
+```{=html}
+<style>
+/* Floating TOC container */
+.tocify {
+  max-width: 300px;
+  font-family: 'Segoe UI', sans-serif;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  padding: 16px 10px;
+  margin-top: 20px;
+}
 
+/* Section headers inside TOC */
+.tocify-header {
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 10px 0 5px 0;
+}
+
+/* TOC links */
+.tocify-item {
+  color: #2c3e50;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+/* Hover effect */
+.tocify-item:hover {
+  background-color: #ecf0f1;
+  padding-left: 18px;
+}
+
+/* Highlighted active section */
+.tocify-item.active {
+  background-color: #d1ecf1;
+  font-weight: bold;
+  border-left: 4px solid #3498db;
+}
+</style>
+
+```
 ### **Introduction**
 
 This project investigates how customers perceive the quality of **Samsung smartphones**, with the goal of identifying which specific dimensions of perceived quality most strongly influence their **willingness to pay a premium** and **intention to repurchase**.
@@ -198,7 +241,6 @@ These visualizations allow us to identify general trends, skewness, and patterns
 
 By inspecting these distributions, we can preliminarily assess **data suitability** for factor analysis and detect any **floor or ceiling effects** that could impact the results.
 
-
 \###**Correlation Matrix** The correlation matrix shows how strongly each of the 33 quality-related survey items is **linearly** related to the others. It helps identify clusters of items that may measure the same underlying dimension of perceived quality, serving as a foundation for factor analysis
 
 ###Correlation Matrix
@@ -245,6 +287,7 @@ head(Data_clean)
 ```
 
 ### Scree Plot
+
 ```{r, echo=FALSE, message=FALSE}
 
 # Running PCA without rotation for scree plot analysis
