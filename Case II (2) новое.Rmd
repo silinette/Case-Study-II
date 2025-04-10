@@ -1,0 +1,474 @@
+---
+title: "Case II — Smartphone Quality (Samsung Analysis)"
+author: "Lina Simonian & Elena Pshenichnikova"
+output:
+  html_document:
+    theme: flatly          
+    highlight: breezedark 
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+    df_print: paged
+---
+
+```{=html}
+<style>
+/* Floating TOC container */
+.tocify {
+  max-width: 300px;
+  font-family: 'Segoe UI', sans-serif;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  padding: 16px 10px;
+  margin-top: 20px;
+}
+
+/* Section headers inside TOC */
+.tocify-header {
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 10px 0 5px 0;
+}
+
+/* TOC links */
+.tocify-item {
+  color: #2c3e50;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+/* Hover effect */
+.tocify-item:hover {
+  background-color: #ecf0f1;
+  padding-left: 18px;
+}
+
+/* Highlighted active section */
+.tocify-item.active {
+  background-color: #d1ecf1;
+  font-weight: bold;
+  border-left: 4px solid #3498db;
+}
+</style>
+```
+### **Introduction**
+
+This project investigates how customers perceive the quality of **Samsung smartphones**, with the goal of identifying which specific dimensions of perceived quality most strongly influence their **willingness to pay a premium** and **intention to repurchase**.
+
+> While product quality is widely recognized as a *multidimensional concept*, there is currently no consistent measurement scale that fully captures this complexity from the consumer’s perspective.
+
+To address this gap, we focus exclusively on **Samsung users**, analyzing data from a larger survey of over **1,000 smartphone customers** in the United States. From this dataset, we isolated the responses of those who indicated that they use a Samsung smartphone. The survey includes **33 quality-related items**, developed through **qualitative interviews** and **expert validation**.
+
+Using **factor analysis**, we aim to uncover the **latent dimensions** of how Samsung users evaluate product quality. These extracted factors are then analyzed in relation to key business outcomes such as customer satisfaction, brand preference, and purchase intentions. The findings of this study can provide **actionable insights** for *product managers*, *marketers*, and *operational teams*, helping them understand what truly drives **customer loyalty** in the competitive smartphone market.
+
+------------------------------------------------------------------------
+
+### **Question 1: Orthogonal Factor Analysis**
+
+To begin the analysis, we first **cleaned the dataset** using **listwise deletion**, removing observations with any missing values in the relevant variables.
+
+We then loaded all **required R packages**, including:
+
+-   `corrplot` – for correlation matrix visualization\
+-   `olsrr` – for multicollinearity diagnostics (VIF and tolerance values)\
+-   `REdaS` – for Bartlett’s test and KMO measure\
+-   `psych` – for principal component analysis (PCA)
+
+> Additionally, the dataset was uploaded to **GitHub**, ensuring collaborative access and making it easier to update the project, rerun the analysis, and track progress consistently across devices.
+
+```{r}
+
+# Сlear the database
+rm(list=ls()) 
+graphics.off()
+
+```
+
+```{r,message=FALSE, warning=FALSE}
+
+#Readability in HTML report
+#install.packages("DT")
+library(DT)
+
+# Clear the database
+rm(list=ls()) 
+
+#Install necessary packages. Delete # sign in order to download all of them. 
+#install.packages('rcompanion', repos = "https://cloud.r-project.org")
+#install.packages('nortest', repos = "https://cloud.r-project.org")
+#install.packages('corrplot', repos = "https://cloud.r-project.org")
+#install.packages('olsrr', repos = "https://cloud.r-project.org")
+#install.packages('dplyr', repos = "https://cloud.r-project.org")
+#install.packages('pastecs', repos = "https://cloud.r-project.org")
+#install.packages('REdaS', repos = "https://cloud.r-project.org")
+#install.packages('psych', repos = "https://cloud.r-project.org")
+#install.packages('lm.beta', repos = "https://cloud.r-project.org")
+
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(broom)
+library(lm.beta)
+library(pastecs)
+library(tidyr)
+library(corrplot)     # For correlation matrix visualization
+library(olsrr)        # For VIF and tolerance values
+library(REdaS)        # For Bartlett's test
+library(psych)        # For PCA and KMO
+
+```
+
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+
+# Read the dataset directly from the provided URL
+url <- "https://raw.githubusercontent.com/silinette/Case-Study-II/refs/heads/main/Data%20File_Case_Study_Factor%20Analysis_MD.csv"
+
+Data <- read.csv(url, header = TRUE)
+Data
+```
+
+------------------------------------------------------------------------
+
+### **Data Structure Exploration**
+
+In the next step, we examined the **structure of the dataset** to gain an initial understanding of the available information. We confirmed that the dataset contained **1,014 observations** and **74 variables**.
+
+To ensure proper familiarity with the data, we performed the following steps:\
+- Reviewed the **first few rows** of the dataset\
+- Explored the **names of all variables**\
+- Inspected the **data types** and **sample values** for each column
+
+This exploratory step was essential to validate the integrity of the data before proceeding with any statistical analysis.
+
+------------------------------------------------------------------------
+
+```{r, message=FALSE, warning=FALSE}
+# Explore the structure of the dataset
+dim(Data) # Check the number of rows and columns in the dataset
+head(Data) # Display the first few rows of the dataset
+str(Data) # Display the structure of the dataset (types, sample values)
+names(Data) # Show all variable names in the dataset
+```
+
+------------------------------------------------------------------------
+
+### **Data Refinement and Cleaning**
+
+At this stage, we refined the dataset by selecting only the variables essential for the analysis — specifically, **33 quality perception items** (`qd1` to `qd33`) and several outcome-related variables such as **brand recommendation**, **willingness to pay**, and **repurchase intentions** (`brandrec`, `wtp1`, `wtp2`, `wtp3`, `ri1`, `ri2`).
+
+To maintain data consistency and integrity, we applied **listwise deletion**, excluding all observations that had missing values in any of the selected fields. This ensured that the resulting dataset was **clean**, **complete**, and suitable for conducting the factor analysis.
+
+------------------------------------------------------------------------
+
+```{r, message=FALSE, warning=FALSE}
+# Select only variables needed for the analysis
+Data <- Data %>%
+  select(
+    qd1, qd2, qd3, qd4, qd5, qd6, qd7, qd8, qd9,
+    qd10, qd11, qd12, qd13, qd14, qd15, qd16, qd17, qd18, qd19,
+    qd20, qd21, qd22, qd23, qd24, qd25, qd26, qd27, qd28, qd29,
+    qd30, qd31, qd32, qd33,
+    brandrec, wtp1, wtp2, wtp3, ri1, ri2
+  )
+# Check for missing values
+list_na <- colnames(Data)[apply(Data, 2, anyNA)] # Identify columns with missing values
+list_na 
+sum(is.na(Data)) # Count total number of missing values
+sum(!is.na(Data)) # Count total number of non-missing values
+
+# Remove all rows with missing values (listwise deletion)
+Data_clean <- na.omit(Data)
+
+#IMPORTANT! We select only our brand. In our case is Samsung = 2.
+#Data_clean <- Data_clean %>% filter(brandrec == 2)
+
+# Сheck structure and dimensions of the new dataset
+str(Data_clean)
+dim(Data_clean)
+
+sum(is.na(Data_clean))
+
+#write.csv(Data_clean, file = "~/Desktop/Data_clean.csv", row.names = FALSE) 
+```
+
+###Descriptive statistics
+
+```{r}
+
+# Descriptive statistics for 33 quality-related variables
+round(stat.desc(Data_clean[, paste0("qd", 1:33)]), digits = 3)
+
+# Descriptive statistics (mean, standard deviation, min, max, etc.) for the 33 quality-related survey items (qd1 to qd33) from the cleaned dataset. The results are rounded to 2 decimal places for readability. 
+
+# Normality test not included (norm = TRUE) because Likert-scale items are not truly continuous.
+```
+
+```{r}
+# Reshape only qd1 to qd33 into long format for visualization
+data_long <- Data_clean %>%
+  select(paste0("qd", 1:33)) %>%  # Use only quality-related survey items
+  pivot_longer(everything(), names_to = "Item", values_to = "Response")  # Convert from wide to long format
+
+# Order items numerically (qd1 to qd33) instead of alphabetically
+data_long$Item <- factor(data_long$Item, levels = paste0("qd", 1:33))
+
+# Preview reshaped data
+head(data_long) # Show the first few rows of the long-format data to check the transformation
+
+# Convert responses to ordered factor
+data_long$Response <- factor(data_long$Response, levels = sort(unique(unlist(Data_clean)))) # Convert all numeric responses into an ordered factor to preserve Likert scale order in plots
+
+# Plot response distributions for all items (directly in R Markdown)
+ggplot(data_long, aes(x = Response)) + # Set x-axis to response values
+  geom_bar(fill = "violetred2") + # Create bar charts
+  facet_wrap(~ Item, scales = "free_y") + # One plot per item
+  labs(title = "Distributions", x = "Response", y = "Count") + # Title and axis labels
+  theme_minimal(base_size = 6)  # Clean theme
+
+```
+
+\###**Visual Inspection of Response Distributions**
+
+The chart above presents **individual bar plots** for all 33 survey items related to perceived product quality (qd1–qd33). Each plot displays the **frequency distribution** of participant responses on a **Likert scale** ranging from 1 to 7.
+
+These visualizations allow us to identify general trends, skewness, and patterns across items. For instance, the majority of responses for most items cluster around values 3 to 5, indicating moderate to high perceptions of quality. Items such as `qd4`, `qd23`, and `qd28` exhibit greater variability or skew, suggesting diverse customer opinions in those areas.
+
+By inspecting these distributions, we can preliminarily assess **data suitability** for factor analysis and detect any **floor or ceiling effects** that could impact the results.
+
+\###**Correlation Matrix** The correlation matrix shows how strongly each of the 33 quality-related survey items is **linearly** related to the others. It helps identify clusters of items that may measure the same underlying dimension of perceived quality, serving as a foundation for factor analysis.
+
+###Correlation Matrix
+
+```{r, echo=FALSE, message = FALSE}
+
+# Calculate and visualize correlation matrix
+raqMatrix <- cor(Data_clean[, paste0("qd", 1:33)])
+corrplot(as.matrix(raqMatrix))
+
+```
+
+During the inspection of the correlation matrix, we observed a low correlation between **Item 23 (qd23)** and **Item 4 (qd4)**. This could mean they are **weak contributors**, possibly they won't load meaningfully on any factor.\
+To reduce redundancy and improve the reliability of the factor analysis, **Item 23 (qd23)** and **Item 4 (qd4)** be removed from the dataset.
+
+#Bartlett’s Test и KMO
+
+```{r, echo=FALSE, message = FALSE}
+
+# Run Bartlett's test of sphericity
+bart_spher(Data_clean[, paste0("qd", 1:33)])
+
+#KMO Criterion
+kmo_test <- KMOS(Data_clean[, paste0("qd", 1:33)])
+kmo_test$KMO           # Overall KMO measure
+
+#Anti-Image Correlations
+sort(kmo_test$MSA)     # Measure of sampling adequacy for each item
+
+```
+
+**Bartlett's Test of Sphericity** checks if the correlation matrix is an identity matrix (no relationships between variables). A significant result (p \< 0.05) means the variables do have meaningful correlations, which supports using factor analysis or PCA.
+
+**Kaiser–Meyer–Olkin (KMO) Measure** assesses the adequacy of sampling for factor analysis by examining how patterns of correlations are relatively compact. The KMO value ranges from 0 to 1, where a value closer to 1 indicates that a factor analysis is appropriate. A KMO of 0.9493879 is considered excellent, suggesting that the data are highly suitable for factor analysis or PCA.
+
+**Anti-Image Correlations.** Although qd4 still meet the minimum threshold (above 0.50), its anti-image correlation values are relatively lower compared to the rest. However, qd23 despite a weak visual correlation pattern, shows **good MSA** (0.90).
+
+```{r, echo=FALSE, message=FALSE}
+
+# Running PCA without rotation for scree plot analysis
+PC0 <- principal(Data_clean[, paste0("qd", 1:33)], 
+                 rotate = "none")
+
+# Extraction and displaying communalities
+PC0_communalities <- data.frame(sort(PC0$communality))
+PC0_communalities
+
+```
+**Item Evaluation.** qd4 and qd23 performance in the factor model is limited. Specifically, qd4 showed extremely low communality (0.005), indicating it is almost entirely unrelated to the extracted factors. qd23 also displayed low communality (0.046), suggesting it does not meaningfully contribute to the factor structure, despite having a strong sampling adequacy score (MSA = 0.90).
+
+**Conclusion.** Based on their very low communalities, both qd4 and qd23 were excluded from further analysis to improve the clarity and strength of the factor solution.
+
+```{r, echo=FALSE, message = FALSE}
+# Remove qd4 and qd23 
+# These two items may distort the factor structure,
+# so they are excluded from the analysis.
+Data_clean <- Data_clean[, !colnames(Data_clean) %in% c("qd4", "qd23")]
+head(Data_clean)
+```
+
+### Scree Plot
+```{r, echo=FALSE, message=FALSE}
+
+# Running PCA without rotation for scree plot analysis
+PC0 <- principal(Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))], 
+                 rotate = "none")
+PC0$values #Eigenvalues
+
+# Scree plot of eigenvalues
+plot(PC0$values, type = "b", main = "Scree Plot", xlab = "Factor Number", ylab = "Eigenvalue")
+abline(h = 1) # Kaiser criterion line
+
+# Extraction and displaying communalities
+PC0_communalities <- data.frame(sort(PC0$communality))
+PC0_communalities
+
+```
+
+### PCA with Varimax Rotation
+
+```{r, echo=FALSE, message = FALSE}
+
+# Principal Components Analysis (PCA) with Varimax Rotation
+PC1 <- principal(
+  Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))],
+  rotate = "varimax",
+  nfactors = 8,
+  scores = TRUE
+)
+
+# Extract eigenvalues
+EigenValue_pc1 <- PC1$values
+EigenValue_pc1
+
+# Sort and save communalities
+PC1_communalities <- data.frame(sort(PC1$communality))
+PC1_communalities
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+
+# Extraction eigenvalues from the PCA object
+EigenValue <- PC1$values
+
+# Number of items (qd1..qd33) used in factor analysis
+n_items <- 31
+
+# Calculating percentage of variance explained by each factor
+Variance <- EigenValue / n_items * 100
+
+# Cumulative variance explained
+SumVariance <- cumsum(Variance)
+
+# Building a summary table of eigenvalues and variance explained
+Total_Variance_Explained <- cbind(
+  EigenValue = EigenValue[EigenValue > 0],
+  Variance = Variance[Variance > 0],
+  Total_Variance = SumVariance[Variance > 0]
+)
+
+# Viewing the table
+Total_Variance_Explained
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+
+# Print factor loadings above 0.3, sorted by factor
+# A threshold of 0.3 is commonly used to highlight meaningful factor-variable relationships
+print(PC1$loadings, cutoff = 0.3, sort = TRUE)
+
+```
+
+model \<- lm(y \~ x, data = Data)
+
+```{r, echo=FALSE, message = FALSE}
+library(knitr)
+
+factor_table <- data.frame(
+  Factor = c("RC1", "RC2", "RC3", "RC4", "RC5", "RC6", "RC7", "RC8"),
+  Quality_Dimension = c(
+    "Performance",
+    "Serviceability",
+    "Aesthetics/Appearance",
+    "Durability",
+    "Ease of Use",
+    "Features/Versatility",
+    "Reliability/Flawlessness",
+    "Distinctiveness/Prestige"
+  ),
+  Survey_Items = c(
+    "qd2, qd5, qd7, qd12, qd16",              # RC1
+    "qd9, qd14, qd19, qd21, qd24",             # RC2
+    "qd1, qd10, qd20, qd27",                   # RC3
+    "qd15, qd17, qd32",                        # RC4
+    "qd3, qd11, qd13, qd30",                   # RC5
+    "qd6, qd8, qd18, qd25",                    # RC6
+    "qd22, qd29, qd33",                        # RC7
+    "qd26, qd28, qd31"                         # RC8
+  ),
+  Interpretation = c(
+    "Core performance and consistency in main functions.",
+    "Responsiveness and helpfulness of customer service.",
+    "Design, visual appeal, and overall look of the product.",
+    "Sturdiness and resistance to wear over time.",
+    "Easy to understand, navigate, and operate.",
+    "Advanced features and technical flexibility.",
+    "Lack of defects and high technical accuracy.",
+    "Prestige, brand distinctiveness, and symbolism."
+  )
+)
+
+kable(factor_table, caption = "Table: Factors and Their Interpretations Based on PCA (Varimax) Loadings", align = "l")
+
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+# Add factor ratings to the raw data
+Data_with_scores <- cbind(Data_clean, PC1$scores)
+
+# Let’s look at brand names (suppose the variable is called brandrec)
+unique(Data_with_scores$brandrec)  
+
+# Compare average factor values by brand
+library(dplyr)
+
+#factor_by_brandrec <- Data_with_scores %>%
+ # group_by(brandrec) %>%
+  #summarise(across(RC1:RC9, mean, na.rm = TRUE))
+
+#print(factor_by_brandrec)
+```
+
+```{r, echo=FALSE, message = FALSE}
+
+# Combine factors and brands into one dataframe
+Data_scores <- cbind(Data_clean["brandrec"], PC1$scores)
+
+# Group by brand and calculate the average value for each factor
+Factor_means <- Data_scores %>%
+  group_by(brandrec) %>%
+  summarise(across(starts_with("RC"), mean))
+
+Factor_means
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+
+# Convert table to long format for ggplot
+Factor_means_long <- Factor_means %>%
+  pivot_longer(cols = starts_with("RC"), names_to = "Factor", values_to = "Mean")
+
+# Graph
+ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = factor(brandrec))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Comparison of Brands by Factor Scores",
+       x = "Factor",
+       y = "Mean Score",
+       fill = "Brand") +
+  theme_minimal(base_size = 14)
+
+```
+
+unique(Data$brandrec)
+table(Data$brandrec)
+
+unique(Data_clean$brandrec)
+table(Data_clean$brandrec)
