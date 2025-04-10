@@ -1,5 +1,5 @@
 ---
-title: "Case II — Smartphone Quality"
+title: "Case II — Smartphone Quality. Factor Analysis"
 author: "Lina Simonian & Elena Pshenichnikova"
 date: "2025-03-25"
 output:
@@ -55,7 +55,7 @@ output:
 }
 </style>
 
-### **Introduction**
+# **Introduction**
 
 This project investigates how customers perceive the quality of smartphones across multiple brands, with the goal of identifying the key dimensions of perceived quality that influence consumer behavior—such as **willingness to pay a premium** or **repurchase intentions**.
 
@@ -66,7 +66,7 @@ Using **factor analysis**, we aim to uncover the underlying structure of how use
 
 ------------------------------------------------------------------------
 
-### **Question 1: Orthogonal Factor Analysis**
+# **Question 1: Orthogonal Factor Analysis**
 
 To begin the analysis, we first **cleaned the dataset** using **listwise deletion**, removing observations with any missing values in the relevant variables.
 
@@ -134,7 +134,7 @@ Data
 
 ------------------------------------------------------------------------
 
-### **Data Structure Exploration**
+## **Data Structure Exploration**
 
 In the next step, we examined the **structure of the dataset** to gain an initial understanding of the available information. We confirmed that the dataset contained **1,014 observations** and **74 variables**.
 
@@ -157,7 +157,7 @@ names(Data) # Show all variable names in the dataset
 
 ------------------------------------------------------------------------
 
-### **Data Refinement and Cleaning**
+## **Data Refinement and Cleaning**
 
 At this stage, we refined the dataset by selecting only the variables essential for the analysis — specifically, **33 quality perception items** (`qd1` to `qd33`) and several outcome-related variables such as **brand recommendation**, **willingness to pay**, and **repurchase intentions** (`brandrec`, `wtp1`, `wtp2`, `wtp3`, `ri1`, `ri2`).
 
@@ -193,7 +193,7 @@ sum(is.na(Data_clean))
 #write.csv(Data_clean, file = "~/Desktop/Data_clean.csv", row.names = FALSE) 
 ```
 
-### **Descriptive statistics**                                                                                      
+## **Descriptive statistics**                                                                                      
 To gain an initial understanding of the dataset, we conducted a descriptive statistical analysis for all 33 quality-related survey items (qd1–qd33). These items reflect various dimensions of perceived smartphone quality, such as durability, reliability, aesthetics, ease of use, and performance.
 
 The analysis included measures such as:
@@ -208,7 +208,7 @@ The analysis included measures such as:
 # Normality test not included (norm = TRUE) because Likert-scale items are not truly continuous.
 round(stat.desc(Data_clean[, paste0("qd", 1:33)]), digits = 3)
 ```
-### **Visual Inspection of Response Distributions**
+## **Visual Inspection of Response Distributions**
 
 The chart above presents **individual bar plots** for all 33 survey items related to perceived product quality (qd1–qd33). Each plot displays the **frequency distribution** of participant responses on a **Likert scale** ranging from 1 to 7.
 
@@ -239,21 +239,27 @@ ggplot(data_long, aes(x = Response)) + # Set x-axis to response values
 
 ```
 
-### **Correlation Matrix**
+## **Correlation Matrix**
 **Correlation Matrix** The correlation matrix shows how strongly each of the 33 quality-related survey items is **linearly** related to the others. It helps identify clusters of items that may measure the same underlying dimension of perceived quality, serving as a foundation for factor analysis
 ```{r, echo=FALSE, message = FALSE}
 
 # Calculate and visualize correlation matrix
 raqMatrix <- cor(Data_clean[, paste0("qd", 1:33)])
-corrplot(as.matrix(raqMatrix))
+
+corrplot(raqMatrix,
+         method = "color",
+         type = "upper",
+         tl.cex = 0.5,
+         number.cex = 0.5,
+         tl.col = "black",   
+         mar = c(1,1,1,1),
+         cl.cex = 0.5)
 
 ```
 
-During the inspection of the correlation matrix, we observed an extremely high correlation between **Item 23 (qd23)** and **Item 4 (qd4)**. Such strong multicollinearity indicates that these items are likely measuring the same underlying concept, potentially distorting the factor structure.\
-To reduce redundancy and improve the reliability of the factor analysis, **Item 23 (qd23)** and **Item 4 (qd4)** was removed from the dataset but they will be required.
+During the inspection of the correlation matrix, we observed an extremely week correlation between **Item 23 (qd23)** and **Item 4 (qd4)**. Such week multicollinearity indicates that these items are not likely measuring the same underlying concept, potentially distorting the factor structure.\
 
-### **Bartlett’s Test и KMO**
-
+## **Bartlett’s Test и KMO**
 ```{r, echo=FALSE, message = FALSE}
 # Run Bartlett's test of sphericity
 bart_spher(Data_clean[, paste0("qd", 1:33)])
@@ -271,23 +277,17 @@ sort(kmo_test$MSA)     # Measure of sampling adequacy for each item
 
 **Kaiser–Meyer–Olkin (KMO) Measure** assesses the adequacy of sampling for factor analysis by examining how patterns of correlations are relatively compact. The KMO value ranges from 0 to 1, where a value closer to 1 indicates that a factor analysis is appropriate. A KMO of 0.9493879 is considered excellent, suggesting that the data are highly suitable for factor analysis or PCA.
 
-**Anti-Image Correlations.** Although both qd4 and qd23 still meet the minimum threshold (above 0.50), their anti-image correlation values are relatively lower compared to the rest. Therefore, as a precaution, we will remove qd4 and qd23 from the analysis.
+**Anti-Image Correlations.** Although qd4 still meet the minimum threshold (above 0.50), its anti-image correlation values are relatively lower compared to the rest. However, qd23 despite a weak visual correlation pattern, shows **good MSA** (0.90).
 
-```{r, echo=FALSE, message = FALSE}
-# Remove qd4 and qd23 due to high multicollinearity
-# These two items are highly correlated and may distort the factor structure,
-# so they are excluded from the analysis.
-Data_clean <- Data_clean[, !colnames(Data_clean) %in% c("qd4", "qd23")]
-head(Data_clean)
-```
-
-### **Scree Plot**
-
+## **Scree Plot**
 ```{r, echo=FALSE, message=FALSE}
 
 # Running PCA without rotation for scree plot analysis
-PC0 <- principal(Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))], 
-                 rotate = "none")
+PC0 <- principal(
+  Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))],
+  rotate = "none"
+)
+
 PC0$values #Eigenvalues
 
 # Scree plot of eigenvalues
@@ -299,13 +299,19 @@ PC0_communalities <- data.frame(sort(PC0$communality))
 PC0_communalities
 
 ```
+The **scree plot** displays the eigenvalues of all extracted factors. The first factor explains a substantial amount of variance, while the next four also have eigenvalues above 1. From the sixth factor onward, the curve levels off and eigenvalues drop below the threshold.
 
-### **PCA with Varimax Rotation**
+Based on the **Kaiser criterion** (eigenvalues > 1) and the **elbow rule**, it is decided to retain **eight factors**, as they represent the most meaningful structure in the data.
+
+
+## **Principal Component Analysis with Varimax Rotation**
+
+Based on the scree plot and initial inspection of eigenvalues, a solution with **8** factors seems appropriate. To further explore the structure of the data and validate this assumption, a **Principal Component Analysis (PCA)** with **Varimax rotation** will now be conducted.
 
 ```{r, echo=FALSE, message = FALSE}
 
 # Principal Components Analysis (PCA) with Varimax Rotation
-PC1 <- principal(
+PCA1 <- principal(
   Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))],
   rotate = "varimax",
   nfactors = 8,
@@ -313,19 +319,19 @@ PC1 <- principal(
 )
 
 # Extract eigenvalues
-EigenValue_pc1 <- PC1$values
-EigenValue_pc1
+EigenValue_PCA1 <- PCA1$values
+EigenValue_PCA1
 
 # Sort and save communalities
-PC1_communalities <- data.frame(sort(PC1$communality))
-PC1_communalities
+PCA1_communalities <- data.frame(sort(PCA1$communality))
+PCA1_communalities
 
 ```
-
+## **Variance Explained Table for PCA Components**
 ```{r, echo=FALSE, message = FALSE}
 
 # Extraction eigenvalues from the PCA object
-EigenValue <- PC1$values
+EigenValue <- PCA1$values
 
 # Number of items (qd1..qd33) used in factor analysis
 n_items <- 31
@@ -352,11 +358,10 @@ Total_Variance_Explained
 
 # Print factor loadings above 0.3, sorted by factor
 # A threshold of 0.3 is commonly used to highlight meaningful factor-variable relationships
-print(PC1$loadings, cutoff = 0.3, sort = TRUE)
+print(PCA1$loadings, cutoff = 0.3, sort = TRUE)
 
 ```
 
-model \<- lm(y \~ x, data = Data)
 
 ```{r, echo=FALSE, message = FALSE}
 library(knitr)
@@ -399,10 +404,86 @@ kable(factor_table, caption = "Table: Factors and Their Interpretations Based on
 
 
 ```
+## **Principal Axis Factoring (PAF) with Varimax rotation**
+```{r, echo=FALSE, message = FALSE}
+# Run Principal Axis Factoring (PAF) with Varimax rotation
+PAF1 <- fa(
+  Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))],
+  nfactors = 8,
+  rotate = "varimax",
+  fm = "pa",           # метод extraction = Principal Axis
+  scores = TRUE
+)
+
+# Extract eigenvalues
+EigenValue_PAF1 <- PAF1$e.values
+EigenValue_PAF1
+
+# Sort and save communalities
+PAF1_communalities <- data.frame(sort(PAF1$communality))
+PAF1_communalities
+```
+```{r, echo=FALSE, message = FALSE}
+
+# Print factor loadings above 0.3, sorted by factor
+# A threshold of 0.3 is commonly used to highlight meaningful factor-variable relationships
+print(PAF1$loadings, cutoff = 0.3, sort = TRUE)
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+# Получаем таблицы с нагрузками
+PCA_loadings <- as.data.frame(unclass(PCA1$loadings))
+PAF_loadings <- as.data.frame(unclass(PAF1$loadings))
+
+# Округляем значения
+PCA_loadings <- round(PCA_loadings, 2)
+PAF_loadings <- round(PAF_loadings, 2)
+
+# Добавляем суффиксы
+colnames(PCA_loadings) <- paste0(colnames(PCA_loadings), "_PCA")
+colnames(PAF_loadings) <- paste0(colnames(PAF_loadings), "_PAF")
+
+# Упорядочим столбцы попарно: RC1_PCA, RC1_PAF, RC2_PCA, RC2_PAF и т.д.
+combined_list <- list()
+for (i in 1:ncol(PCA_loadings)) {
+  fac_name <- gsub("_PCA", "", colnames(PCA_loadings)[i])
+  combined_list[[paste0(fac_name, "_PCA")]] <- PCA_loadings[[i]]
+  combined_list[[paste0(fac_name, "_PAF")]] <- PAF_loadings[[i]]
+}
+
+# Собираем в датафрейм
+Combined_Loadings <- as.data.frame(combined_list)
+rownames(Combined_Loadings) <- rownames(PCA_loadings)
+
+# Печатаем
+print(Combined_Loadings)
+
+# Для красивого отображения:
+# DT::datatable(Combined_Loadings)
+# или
+# knitr::kable(Combined_Loadings, caption = "Side-by-Side Factor Loadings: PCA vs PAF")
+
+# knitr::kable(Combined_Loadings, caption = "Comparison of PCA and PAF Loadings")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r, echo=FALSE, message = FALSE}
 # Add factor ratings to the raw data
-Data_with_scores <- cbind(Data_clean, PC1$scores)
+Data_with_scores <- cbind(Data_clean, PCA1$scores)
 
 # Let’s look at brand names (suppose the variable is called brandrec)
 unique(Data_with_scores$brandrec)  
@@ -420,7 +501,7 @@ library(dplyr)
 ```{r, echo=FALSE, message = FALSE}
 
 # Combine factors and brands into one dataframe
-Data_scores <- cbind(Data_clean["brandrec"], PC1$scores)
+Data_scores <- cbind(Data_clean["brandrec"], PCA1$scores)
 
 # Group by brand and calculate the average value for each factor
 Factor_means <- Data_scores %>%
@@ -448,8 +529,8 @@ ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = factor(brandrec))) +
 
 ```
 
-unique(Data$brandrec)
-table(Data$brandrec)
 
-unique(Data_clean$brandrec)
-table(Data_clean$brandrec)
+
+
+# **Question 1: Orthogonal Factor Analysis**
+
