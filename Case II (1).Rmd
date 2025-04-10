@@ -1,6 +1,7 @@
 ---
-title: "Case II — Smartphone Quality (Samsung Analysis)"
+title: "Case II — Smartphone Quality"
 author: "Lina Simonian & Elena Pshenichnikova"
+date: "2025-03-25"
 output:
   html_document:
     theme: flatly          
@@ -11,7 +12,7 @@ output:
     code_folding: show
     df_print: paged
 ---
-```{=html}
+
 <style>
 /* Floating TOC container */
 .tocify {
@@ -54,16 +55,14 @@ output:
 }
 </style>
 
-```
 ### **Introduction**
 
-This project investigates how customers perceive the quality of **Samsung smartphones**, with the goal of identifying which specific dimensions of perceived quality most strongly influence their **willingness to pay a premium** and **intention to repurchase**.
+This project investigates how customers perceive the quality of smartphones across multiple brands, with the goal of identifying the key dimensions of perceived quality that influence consumer behavior—such as **willingness to pay a premium** or **repurchase intentions**.
 
-> While product quality is widely recognized as a *multidimensional concept*, there is currently no consistent measurement scale that fully captures this complexity from the consumer’s perspective.
+Although product quality is widely accepted as a *multidimensional concept*, few studies have successfully captured this complexity from the customer’s point of view using consistent measurement tools. To address this gap, we analyze survey data from over **1,000 smartphone users** in the United States, focusing on **33 product quality items** developed through expert interviews and validation.
 
-To address this gap, we focus exclusively on **Samsung users**, analyzing data from a larger survey of over **1,000 smartphone customers** in the United States. From this dataset, we isolated the responses of those who indicated that they use a Samsung smartphone. The survey includes **33 quality-related items**, developed through **qualitative interviews** and **expert validation**.
+Using **factor analysis**, we aim to uncover the underlying structure of how users assess smartphone quality. These latent dimensions are then evaluated across brands to compare perceived strengths and weaknesses. The findings offer valuable insights for **product managers**, **marketers**, and **brand strategists** looking to better understand what drives **customer satisfaction and loyalty** in a competitive market.
 
-Using **factor analysis**, we aim to uncover the **latent dimensions** of how Samsung users evaluate product quality. These extracted factors are then analyzed in relation to key business outcomes such as customer satisfaction, brand preference, and purchase intentions. The findings of this study can provide **actionable insights** for *product managers*, *marketers*, and *operational teams*, helping them understand what truly drives **customer loyalty** in the competitive smartphone market.
 
 ------------------------------------------------------------------------
 
@@ -185,9 +184,6 @@ sum(!is.na(Data)) # Count total number of non-missing values
 # Remove all rows with missing values (listwise deletion)
 Data_clean <- na.omit(Data)
 
-#IMPORTANT! We select only our brand. In our case is Samsung = 2.
-#Data_clean <- Data_clean %>% filter(brandrec == 2)
-
 # Сheck structure and dimensions of the new dataset
 str(Data_clean)
 dim(Data_clean)
@@ -197,18 +193,28 @@ sum(is.na(Data_clean))
 #write.csv(Data_clean, file = "~/Desktop/Data_clean.csv", row.names = FALSE) 
 ```
 
-###Descriptive statistics
+### **Descriptive statistics**                                                                                      
+To gain an initial understanding of the dataset, we conducted a descriptive statistical analysis for all 33 quality-related survey items (qd1–qd33). These items reflect various dimensions of perceived smartphone quality, such as durability, reliability, aesthetics, ease of use, and performance.
 
+The analysis included measures such as:
+
+- Mean — showing the average perception for each item
+- Standard deviation — indicating how much responses varied across users
+- Minimum and maximum values — to capture the range of responses
+- Skewness patterns — to identify whether responses were clustered toward low or high values
 ```{r}
-
 # Descriptive statistics for 33 quality-related variables
-round(stat.desc(Data_clean[, paste0("qd", 1:33)]), digits = 3)
-
 # Descriptive statistics (mean, standard deviation, min, max, etc.) for the 33 quality-related survey items (qd1 to qd33) from the cleaned dataset. The results are rounded to 2 decimal places for readability. 
-
 # Normality test not included (norm = TRUE) because Likert-scale items are not truly continuous.
+round(stat.desc(Data_clean[, paste0("qd", 1:33)]), digits = 3)
 ```
+### **Visual Inspection of Response Distributions**
 
+The chart above presents **individual bar plots** for all 33 survey items related to perceived product quality (qd1–qd33). Each plot displays the **frequency distribution** of participant responses on a **Likert scale** ranging from 1 to 7.
+
+These visualizations allow us to identify general trends, skewness, and patterns across items. For instance, the majority of responses for most items cluster around values 3 to 5, indicating moderate to high perceptions of quality. Items such as `qd4`, `qd23`, and `qd28` exhibit greater variability or skew, suggesting diverse customer opinions in those areas.
+
+By inspecting these distributions, we can preliminarily assess **data suitability** for factor analysis and detect any **floor or ceiling effects** that could impact the results.
 ```{r}
 # Reshape only qd1 to qd33 into long format for visualization
 data_long <- Data_clean %>%
@@ -233,18 +239,8 @@ ggplot(data_long, aes(x = Response)) + # Set x-axis to response values
 
 ```
 
-\###**Visual Inspection of Response Distributions**
-
-The chart above presents **individual bar plots** for all 33 survey items related to perceived product quality (qd1–qd33). Each plot displays the **frequency distribution** of participant responses on a **Likert scale** ranging from 1 to 7.
-
-These visualizations allow us to identify general trends, skewness, and patterns across items. For instance, the majority of responses for most items cluster around values 3 to 5, indicating moderate to high perceptions of quality. Items such as `qd4`, `qd23`, and `qd28` exhibit greater variability or skew, suggesting diverse customer opinions in those areas.
-
-By inspecting these distributions, we can preliminarily assess **data suitability** for factor analysis and detect any **floor or ceiling effects** that could impact the results.
-
-\###**Correlation Matrix** The correlation matrix shows how strongly each of the 33 quality-related survey items is **linearly** related to the others. It helps identify clusters of items that may measure the same underlying dimension of perceived quality, serving as a foundation for factor analysis
-
-###Correlation Matrix
-
+### **Correlation Matrix**
+**Correlation Matrix** The correlation matrix shows how strongly each of the 33 quality-related survey items is **linearly** related to the others. It helps identify clusters of items that may measure the same underlying dimension of perceived quality, serving as a foundation for factor analysis
 ```{r, echo=FALSE, message = FALSE}
 
 # Calculate and visualize correlation matrix
@@ -254,12 +250,11 @@ corrplot(as.matrix(raqMatrix))
 ```
 
 During the inspection of the correlation matrix, we observed an extremely high correlation between **Item 23 (qd23)** and **Item 4 (qd4)**. Such strong multicollinearity indicates that these items are likely measuring the same underlying concept, potentially distorting the factor structure.\
-To reduce redundancy and improve the reliability of the factor analysis, **Item 23 (qd23)** was removed from the dataset.
+To reduce redundancy and improve the reliability of the factor analysis, **Item 23 (qd23)** and **Item 4 (qd4)** was removed from the dataset but they will be required.
 
-#Bartlett’s Test и KMO
+### **Bartlett’s Test и KMO**
 
 ```{r, echo=FALSE, message = FALSE}
-
 # Run Bartlett's test of sphericity
 bart_spher(Data_clean[, paste0("qd", 1:33)])
 
@@ -286,7 +281,7 @@ Data_clean <- Data_clean[, !colnames(Data_clean) %in% c("qd4", "qd23")]
 head(Data_clean)
 ```
 
-### Scree Plot
+### **Scree Plot**
 
 ```{r, echo=FALSE, message=FALSE}
 
@@ -305,7 +300,7 @@ PC0_communalities
 
 ```
 
-### PCA with Varimax Rotation
+### **PCA with Varimax Rotation**
 
 ```{r, echo=FALSE, message = FALSE}
 
