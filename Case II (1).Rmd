@@ -327,9 +327,9 @@ PCA1_communalities <- data.frame(sort(PCA1$communality))
 PCA1_communalities
 
 ```
-## **Variance Explained Table for PCA Components**
-```{r, echo=FALSE, message = FALSE}
 
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+### **Variance Explained Table for PCA Components**
 # Extraction eigenvalues from the PCA object
 EigenValue <- PCA1$values
 
@@ -379,31 +379,21 @@ factor_table <- data.frame(
     "Distinctiveness/Prestige"
   ),
   Survey_Items = c(
-    "qd2, qd5, qd7, qd12, qd16",              # RC1
+    "qd1, qd10, qd20, qd27",                   # RC1
     "qd9, qd14, qd19, qd21, qd24",             # RC2
-    "qd1, qd10, qd20, qd27",                   # RC3
+    "qd22, qd29, qd33",                        # RC3
     "qd15, qd17, qd32",                        # RC4
     "qd3, qd11, qd13, qd30",                   # RC5
     "qd6, qd8, qd18, qd25",                    # RC6
-    "qd22, qd29, qd33",                        # RC7
+    "qd2, qd5, qd7, qd12, qd16",               # RC7
     "qd26, qd28, qd31"                         # RC8
-  ),
-  Interpretation = c(
-    "Core performance and consistency in main functions.",
-    "Responsiveness and helpfulness of customer service.",
-    "Design, visual appeal, and overall look of the product.",
-    "Sturdiness and resistance to wear over time.",
-    "Easy to understand, navigate, and operate.",
-    "Advanced features and technical flexibility.",
-    "Lack of defects and high technical accuracy.",
-    "Prestige, brand distinctiveness, and symbolism."
   )
 )
 
 kable(factor_table, caption = "Table: Factors and Their Interpretations Based on PCA (Varimax) Loadings", align = "l")
 
-
 ```
+
 ## **Principal Axis Factoring (PAF) with Varimax rotation**
 ```{r, echo=FALSE, message = FALSE}
 # Run Principal Axis Factoring (PAF) with Varimax rotation
@@ -423,6 +413,7 @@ EigenValue_PAF1
 PAF1_communalities <- data.frame(sort(PAF1$communality))
 PAF1_communalities
 ```
+
 ```{r, echo=FALSE, message = FALSE}
 
 # Print factor loadings above 0.3, sorted by factor
@@ -430,7 +421,35 @@ PAF1_communalities
 print(PAF1$loadings, cutoff = 0.3, sort = TRUE)
 
 ```
-### Comparison
+```{r,echo=FALSE, message = FALSE}
+factor_table <- data.frame(
+  Factor = c("PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PA8"),
+  Quality_Dimension = c(
+    "Serviceability",
+    "Performance",
+    "Reliability/Flawlessness",
+    "Ease of Use",
+    "Aesthetics/Appearance",
+    "Features/Versatility",
+    "Durability",
+    "Distinctiveness/Prestige"
+  ),
+  Survey_Items = c(
+    "qd2, qd5, qd7, qd12, qd16",               # PA1
+    "qd9, qd14, qd19, qd21, qd24",             # PA2
+    "qd22, qd29, qd33",                        # PA3
+    "qd6, qd8, qd18, qd25",                    # PA4
+    "qd3, qd11, qd13, qd30",                   # PA5
+    "qd15, qd17, qd32",                        # PA6
+    "qd1, qd10, qd20, qd27",                   # PA7
+    "qd26, qd28, qd31"                         # PA8
+  )
+)
+kable(factor_table, caption = "Table: Factors and Their Interpretations Based on PAF (Varimax) Loadings", align = "l")
+```
+
+
+## Comparison
 ```{r, echo=FALSE, message = FALSE}
 #PCA
 Eigen_PCA <- PCA1$values
@@ -504,7 +523,7 @@ knitr::kable(
 
 
 
-# **Question 1: Orthogonal Factor Analysis**
+# **Question 2: Oblique Factor Analysis**
 
 
 
@@ -557,8 +576,4 @@ ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = factor(brandrec))) +
 
 ```
 
-
-
-
-# **Question 1: Orthogonal Factor Analysis**
 
