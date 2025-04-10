@@ -106,7 +106,7 @@ rm(list=ls())
 #install.packages('REdaS', repos = "https://cloud.r-project.org")
 #install.packages('psych', repos = "https://cloud.r-project.org")
 #install.packages('lm.beta', repos = "https://cloud.r-project.org")
-
+#install.packages("GPArotation", repos = "https://cloud.r-project.org")
 
 # Load required libraries
 library(ggplot2)
@@ -120,6 +120,7 @@ library(corrplot)     # For correlation matrix visualization
 library(olsrr)        # For VIF and tolerance values
 library(REdaS)        # For Bartlett's test
 library(psych)        # For PCA and KMO
+library(GPArotation)
 
 ```
 
@@ -392,6 +393,7 @@ factor_table <- data.frame(
 
 kable(factor_table, caption = "Table: Factors and Their Interpretations Based on PCA (Varimax) Loadings", align = "l")
 
+
 ```
 
 ## **Principal Axis Factoring (PAF) with Varimax rotation**
@@ -516,16 +518,74 @@ knitr::kable(
 )
 ```
 
-
-
-
-
-
-
-
 # **Question 2: Oblique Factor Analysis**
+## **Principal Axis Factoring (PAF) with Promax rotation**
+```{r}
+# Run Principal Axis Factoring with oblique (Promax) rotation
+PAF_promax <- fa(
+  Data_clean[, paste0("qd", setdiff(1:33, c(4, 23)))],
+  nfactors = 8,
+  rotate = "promax",
+  fm = "pa",
+  scores = TRUE
+)
 
+# Extract eigenvalues
+EigenValue_PAF_promax <- PAF_promax$e.values
+EigenValue_PAF_promax
 
+# Communalities
+PAF_promax_communalities <- data.frame(sort(PAF_promax$communality))
+PAF_promax_communalities
+
+```
+
+```{r, echo=FALSE, message = FALSE}
+print(PAF_promax$loadings, cutoff = 0.3, sort = TRUE)
+```
+```{r}
+library(knitr)
+
+factor_table <- data.frame(
+  Factor = c("PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PA8"),
+  
+  `Quality Dimension` = c(
+    "Performance",
+    "Features / Versatility",
+    "Reliability / Flawlessness",
+    "Durability",
+    "Ease of Use",
+    "Serviceability",
+    "Aesthetics / Appearance",
+    "Prestige / Distinctiveness"
+  ),
+  
+  `Survey Items` = c(
+    "qd2, qd5, qd7, qd12, qd16",         
+    "qd6, qd8, qd18, qd25",              
+    "qd22, qd29, qd33",                  
+    "qd15, qd17, qd26, qd28, qd31, qd32",
+    "qd3, qd11, qd13, qd30",             
+    "qd9, qd14, qd19, qd21, qd24",       
+    "qd1, qd10, qd20, qd27",             
+    "qd4, qd23"                          
+  ),
+  
+  `Brief Description` = c(
+    "How well the smartphone performs its core tasks — efficiency, speed, and consistency.",
+    "The number, innovativeness, and usefulness of extra features.",
+    "Frequency and severity of defects or malfunctions; likelihood of failure.",
+    "Material quality and the product’s lifespan under regular or heavy use.",
+    "How easy it is to learn and operate the phone and its functionalities.",
+    "Quality of customer service — accessibility, responsiveness, professionalism.",
+    "Visual and tactile appeal of the smartphone — design, feel, finish.",
+    "The uniqueness and symbolic value of the phone as a status-enhancing product."
+  )
+)
+
+kable(factor_table, caption = "Table: Factors and Their Interpretations Based on PAF (Promax) Loadings", align = "l")
+
+```
 
 
 ```{r, echo=FALSE, message = FALSE}
@@ -538,9 +598,9 @@ unique(Data_with_scores$brandrec)
 # Compare average factor values by brand
 library(dplyr)
 
-#factor_by_brandrec <- Data_with_scores %>%
- # group_by(brandrec) %>%
-  #summarise(across(RC1:RC9, mean, na.rm = TRUE))
+factor_by_brandrec <- Data_with_scores %>%
+ group_by(brandrec) %>%
+  summarise(across(RC1:RC9, mean, na.rm = TRUE))
 
 #print(factor_by_brandrec)
 ```
@@ -559,20 +619,53 @@ Factor_means
 
 ```
 
+
+
+
 ```{r, echo=FALSE, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(forcats)
 
-# Convert table to long format for ggplot
+# Преобразование таблицы в длинный формат
 Factor_means_long <- Factor_means %>%
-  pivot_longer(cols = starts_with("RC"), names_to = "Factor", values_to = "Mean")
+  mutate(brandrec = recode_factor(
+    brandrec,
+    `1` = "Apple",
+    `2` = "Samsung",
+    `3` = "LG",
+    `4` = "Motorola",
+    `5` = "Other"
+  )) %>%
+  pivot_longer(cols = starts_with("RC"), names_to = "Factor", values_to = "Mean") %>%
+  mutate(Factor = factor(Factor, levels = unique(Factor))) # фиксируем порядок факторов
 
-# Graph
-ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = factor(brandrec))) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Comparison of Brands by Factor Scores",
-       x = "Factor",
-       y = "Mean Score",
-       fill = "Brand") +
-  theme_minimal(base_size = 14)
+# График
+ggplot(Factor_means_long, aes(x = Factor, y = Mean, fill = brandrec)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.7) +
+  geom_text(
+    aes(label = round(Mean, 2),
+        vjust = ifelse(Mean >= 0, -0.3, 1.2)),
+    position = position_dodge(width = 0.8),
+    size = 3.5
+  ) +
+  scale_fill_brewer(palette = "Set2", name = "Brand") +
+  labs(
+    title = "Comparison of Factor Scores by Brand",
+    subtitle = "Mean scores for each factor across smartphone brands",
+    x = "Quality Factor",
+    y = "Average Score"
+  ) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12, margin = margin(b = 10)),
+    axis.text.x = element_text(angle = 20, hjust = 1),
+    legend.position = "bottom"
+  )
+
 
 ```
 
